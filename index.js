@@ -4,7 +4,7 @@ const fs = require('fs');
 wppconnect.create({
   session: 'bot-comandos',
 
-  catchQR: (base64Qr) => {
+  catchQR: () => {
     console.log('📱 Escanea el QR con WhatsApp');
   },
 
@@ -14,25 +14,25 @@ wppconnect.create({
 
   puppeteerOptions: {
     headless: true,
-    executablePath: process.env.CHROME_BIN || undefined,
+    executablePath: process.env.CHROME_BIN,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--single-process'
+      '--disable-dev-shm-usage'
     ]
   }
 })
-.then((client) => {
-  console.log('✅ Cliente iniciado correctamente');
+.then(client => {
+  console.log('✅ Cliente iniciado');
   start(client);
 })
-.catch((error) => {
-  console.error('❌ Error al iniciar WPPConnect:', error);
+.catch(err => {
+  console.error('❌ Error WPPConnect:', err);
 });
 
 function start(client) {
+  // TODO lo demás va aquí (tus comandos)
+}
 
   const comandos = {
 
