@@ -1,16 +1,15 @@
-const wppconnect = require('@wppconnect-team/wppconnect');
-const fs = require('fs');
-
-wppconnect.create({
+const wppconnect.create({
   session: 'bot-comandos',
   catchQR: () => {
     console.log('📱 Escanea el QR con WhatsApp');
   },
   puppeteerOptions: {
     headless: true,
+    executablePath: process.env.CHROME_BIN,
     args: [
       '--no-sandbox',
-      '--disable-setuid-sandbox'
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage'
     ]
   }
 }).then(client => start(client));
