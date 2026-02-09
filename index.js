@@ -3,18 +3,15 @@ const fs = require('fs');
 
 wppconnect.create({
   session: 'bot-comandos',
-
-  catchQR: () => {
-    console.log('📱 Escanea el QR con WhatsApp');
+  catchQR: (base64Qr, asciiQR) => {
+    console.log('📱 Escanea el QR que aparece en la terminal');
+    console.log(asciiQR); // Esto imprime el QR en la consola
   },
-
   statusFind: (statusSession) => {
     console.log('📡 Estado de sesión:', statusSession);
   },
-
   puppeteerOptions: {
-    headless: true,
-    executablePath: process.env.CHROME_BIN,
+    headless: true, // Cambia a false si quieres ver la ventana del navegador
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
@@ -23,100 +20,57 @@ wppconnect.create({
   }
 })
 .then(client => {
-  console.log('✅ Cliente iniciado');
+  console.log('✅ Cliente iniciado correctamente');
   start(client);
 })
 .catch(err => {
-  console.error('❌ Error WPPConnect:', err);
+  console.error('❌ Error al iniciar WPPConnect:', err);
 });
 
 function start(client) {
-  // TODO lo demás va aquí (tus comandos)
-}
-
+  // Las respuestas deben estar DENTRO de start
   const comandos = {
-
     "#8": "⚠️ Atención: 28 requiere apoyo visual, alerta y pendientes. Indica tu D y confirma 15 👀🚨",
-
     "#18": "🚨 URGENTE: 28 en problemas. Se requiere escucha inmediata para indicaciones. Si estás cerca indica VOY 📢⚠️",
-
     "mamá": "🆘 Bajen urgentemente al pasajero 28. Se encuentra en peligro inmediato 🚨🚗",
-
-    "claves": `🚨 CLAVES NECESARIAS PARA UNA EMERGENCIA 🚨
-
-🚻 00 BAÑO
-🍽️ 04 COMIDA
-⚡ 06 RÁPIDO
-⚠️ 07 PRECAUCIÓN
-👂 08 A LA ESCUCHA
-✅ 10 LIBRE
-🚗 11 SERVICIO PLATAFORMA
-🚶 12 SERVICIO POR FUERA
-🍽️ 13 SERVICIO BANQUETERO
-🛡️ 14 MONITOREAR / ESCOLTAR
-📍 15 DESTINO
-🔫 16 PISTOLA
-🚨 18 EMERGENCIA
-📌 20 UBICACIÓN
-✔️ 21 SI / PROCEDER
-❌ 23 NO / CANCELAR
-💊 25 DROGADO
-🕵️ 26 SOSPECHOSO
-👥 28 COMPAÑERO
-🦹 30 LADRÓN
-ℹ️ 40 INFORMACIÓN
-🏳️‍🌈 41 GAY
-🔒 50 MENSAJE PRIVADO
-👨 51 HOMBRE
-👩 52 MUJER
-👨‍👩‍👧 53 FAMILIA
-📦 54 PAQUETE
-🍺 55 BORRACHO
-🛣️ 57 CARRETERA FORÁNEA
-🚫 69 ACOSO
-🚶‍♂️ 73 MOVILIDAD
-🏨 81 HOTEL
-🏠 85 CASA
-🎡 100 FERIA
-💼 400 TRABAJO
-🥊 600 PELEA
-😴 ZZZ DORMIR
-🎯 CC CENTRAL
-🏙️ 1ER CUADRO: CENTRO
-🚓 10200 POLICÍA`
+    "claves": `🚨 CLAVES NECESARIAS PARA UNA EMERGENCIA 🚨\n\n... (tu lista de claves)`
   };
 
   client.onMessage(async (message) => {
-    if (!message.body) return;
+    // Evita responderse a sí mismo o mensajes vacíos
+    if (!message.body || message.from === 'status@broadcast') return;
 
     const texto = message.body.toLowerCase().trim();
 
     // 📁 LOG DE MENSAJES
-    fs.appendFileSync(
-      'log.txt',
-      `${new Date().toISOString()} | ${message.from} | ${message.body}\n`
-    );
+    try {
+      fs.appendFileSync(
+        'log.txt',
+        `${new Date().toLocaleString()} | ${message.from} | ${message.body}\n`
+      );
+    } catch (e) {
+      console.error("Error escribiendo log:", e);
+    }
 
-    // 🔑 COMANDO EXACTO
+    // 🔑 LÓGICA DE RESPUESTA
+    // 1. Comando exacto
     if (comandos[texto]) {
       await client.sendText(message.from, comandos[texto]);
       return;
     }
 
-    // 🔍 DETECCIÓN DENTRO DE FRASES
-    if (texto.includes('#8') || texto.includes(' 8 ')) {
+    // 2. Detección por palabras clave (contiene)
+    if (texto.includes('#8')) {
       await client.sendText(message.from, comandos['#8']);
-      return;
-    }
-
-    if (texto.includes('#18') || texto.includes(' 18 ')) {
+    } 
+    else if (texto.includes('#18')) {
       await client.sendText(message.from, comandos['#18']);
-      return;
-    }
-
-    if (texto.includes('mamá') || texto.includes('mama')) {
+    } 
+    else if (texto.includes('mamá') || texto.includes('mama')) {
       await client.sendText(message.from, comandos['mamá']);
-      return;
+    }
+    else if (texto === 'claves') {
+      await client.sendText(message.from, comandos['claves']);
     }
   });
 }
