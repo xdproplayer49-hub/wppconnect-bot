@@ -1,19 +1,36 @@
-const wppconnect.create({
+const wppconnect = require('@wppconnect-team/wppconnect');
+const fs = require('fs');
+
+wppconnect.create({
   session: 'bot-comandos',
-  catchQR: () => {
+
+  catchQR: (base64Qr) => {
     console.log('📱 Escanea el QR con WhatsApp');
   },
+
+  statusFind: (statusSession) => {
+    console.log('📡 Estado de sesión:', statusSession);
+  },
+
   puppeteerOptions: {
     headless: true,
-    executablePath: process.env.CHROME_BIN,
+    executablePath: process.env.CHROME_BIN || undefined,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage'
+      '--disable-dev-shm-usage',
+      '--disable-gpu',
+      '--single-process'
     ]
   }
-}).then(client => start(client));
-
+})
+.then((client) => {
+  console.log('✅ Cliente iniciado correctamente');
+  start(client);
+})
+.catch((error) => {
+  console.error('❌ Error al iniciar WPPConnect:', error);
+});
 
 function start(client) {
 
@@ -69,7 +86,7 @@ function start(client) {
 🚓 10200 POLICÍA`
   };
 
-  client.onMessage(message => {
+  client.onMessage(async (message) => {
     if (!message.body) return;
 
     const texto = message.body.toLowerCase().trim();
@@ -80,18 +97,26 @@ function start(client) {
       `${new Date().toISOString()} | ${message.from} | ${message.body}\n`
     );
 
-    // 🔑 RESPUESTA POR COMANDO
+    // 🔑 COMANDO EXACTO
     if (comandos[texto]) {
-      client.sendText(message.from, comandos[texto]);
+      await client.sendText(message.from, comandos[texto]);
+      return;
     }
 
-    // 🚨 DETECCIÓN DENTRO DE FRASES
-    if (texto.includes("8")) {
-      client.sendText(message.from, comandos["#8"]);
+    // 🔍 DETECCIÓN DENTRO DE FRASES
+    if (texto.includes('#8') || texto.includes(' 8 ')) {
+      await client.sendText(message.from, comandos['#8']);
+      return;
     }
 
-    if (texto.includes("18")) {
-      client.sendText(message.from, comandos["#18"]);
+    if (texto.includes('#18') || texto.includes(' 18 ')) {
+      await client.sendText(message.from, comandos['#18']);
+      return;
+    }
+
+    if (texto.includes('mamá') || texto.includes('mama')) {
+      await client.sendText(message.from, comandos['mamá']);
+      return;
     }
   });
 }
