@@ -5,8 +5,16 @@ wppconnect.create({
   session: 'bot-comandos',
   catchQR: () => {
     console.log('📱 Escanea el QR con WhatsApp');
+  },
+  puppeteerOptions: {
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox'
+    ]
   }
 }).then(client => start(client));
+
 
 function start(client) {
 
